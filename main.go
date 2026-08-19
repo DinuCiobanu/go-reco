@@ -11,14 +11,18 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		fmt.Println("no .env file found, falling back to environment")
-	}
+	loadEnv()
 
 	duration, unit := resolveInterval()
-
 	go usecases.FetchUsersAtEvery(duration, unit)
 	usecases.FetchProjectsAtEvery(duration, unit)
+}
+
+func loadEnv() {
+	if err := godotenv.Load(); err != nil {
+		fmt.Println("no .env file found, falling back to environment")
+		panic("MISSING .env FILE")
+	}
 }
 
 func resolveInterval() (int, time.Duration) {
