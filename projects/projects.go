@@ -1,4 +1,4 @@
-package users
+package projects
 
 import (
 	"encoding/json"
@@ -10,24 +10,23 @@ import (
 	"go-reco/utilities"
 )
 
-const Dir = "data/users"
+const Dir = "data/projects"
 
-type User struct {
+type Project struct {
 	Gid          string `json:"gid"`
 	Name         string `json:"name"`
 	ResourceType string `json:"resource_type"`
 }
 
-type usersPage struct {
-	Data     []User `json:"data"`
+type projectsPage struct {
+	Data     []Project `json:"data"`
 	NextPage *struct {
 		Offset string `json:"offset"`
 	} `json:"next_page"`
 }
 
-func FetchAll(client *resty.Client, onPage func([]User)) error {
+func FetchAll(client *resty.Client, onPage func([]Project)) error {
 	pageSize := os.Getenv("PAGE_SIZE")
-
 	workspace := os.Getenv("WORKSPACE_GID")
 
 	offset := ""
@@ -40,12 +39,12 @@ func FetchAll(client *resty.Client, onPage func([]User)) error {
 			req.SetQueryParam("offset", offset)
 		}
 
-		resp, err := api.GetWithRetry(req, "/users")
+		resp, err := api.GetWithRetry(req, "/projects")
 		if err != nil {
 			return err
 		}
 
-		var page usersPage
+		var page projectsPage
 		if err := json.Unmarshal(resp.Bytes(), &page); err != nil {
 			return err
 		}
@@ -61,6 +60,6 @@ func FetchAll(client *resty.Client, onPage func([]User)) error {
 	return nil
 }
 
-func Save(user User) error {
-	return utilities.SaveJSON(Dir, user.Gid, user)
+func Save(project Project) error {
+	return utilities.SaveJSON(Dir, project.Gid, project)
 }

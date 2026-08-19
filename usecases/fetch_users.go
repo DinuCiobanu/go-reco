@@ -7,6 +7,7 @@ import (
 
 	"go-reco/api"
 	"go-reco/users"
+	"go-reco/utilities"
 )
 
 func FetchUsersAtEvery(duration int, unit time.Duration) {
@@ -25,11 +26,12 @@ func FetchUsersAtEvery(duration int, unit time.Duration) {
 		}
 	}
 
-	ticker := time.NewTicker(time.Duration(duration) * unit)
+	interval := time.Duration(duration) * unit
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for {
-		fmt.Println("Fetch users")
+		utilities.LogFetch("users", interval)
 		if err := users.FetchAll(client, onPage); err != nil {
 			fmt.Println("error:", err)
 		}
