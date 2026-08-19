@@ -5,37 +5,41 @@ import (
 	"os"
 	"time"
 
+	"resty.dev/v3"
+
 	"go-reco/api"
 	"go-reco/projects"
 	"go-reco/utilities"
 )
 
 func FetchProjectsAtEvery(duration int, unit time.Duration) {
-	if err := os.MkdirAll(projects.Dir, 0o755); err != nil {
-		fmt.Println("error:", err)
-		return
-	}
-
 	client := api.AsanaClient()
-
-	onPage := func(fetched []projects.Project) {
-		for _, project := range fetched {
-			if err := projects.Save(project); err != nil {
-				fmt.Println("error saving project:", err)
-			}
-		}
-	}
-
 	interval := time.Duration(duration) * unit
+
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for {
-		utilities.LogFetch("projects", interval)
-		if err := projects.FetchAll(client, onPage); err != nil {
+		if err := fetchProjectsOnce(client, interval); err != nil {
 			fmt.Println("error:", err)
 		}
 
 		<-ticker.C
 	}
+}
+
+func fetchProjectsOnce(client *resty.Client, interval time.Duration) error {
+	if err := os.MkdirAll(projects.Dir, 0o755); err != nil {
+		return err
+	}
+
+	utilities.LogFetch("projects", interval)
+
+	return projects.FetchAll(client, func(fetched []projects.Project) {
+		for _, project := range fetched {
+			if err := projects.Save(project); err != nil {
+				fmt.Println("error saving project:", err)
+			}
+		}
+	})
 }

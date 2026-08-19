@@ -10,7 +10,7 @@ import (
 	"go-reco/utilities"
 )
 
-const Dir = "data/projects"
+var Dir = "data/projects"
 
 type Project struct {
 	Gid          string `json:"gid"`
